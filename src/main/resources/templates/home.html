@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Good Thymes Virtual Grocery</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+          integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+
+<body>
+<div class="container">
+    <div align="center">
+        <h1>Coronavirus Tracker Application</h1>
+        <p>App for tracking all current confirmed cases</p>
+    </div>
+    <div class="jumbotron">
+        <h1 class="display-2" th:text="${allCurrentDayCases}"></h1>
+        <p class="lead">Total cases reported as of today</p>
+        <hr class="my-4">
+        <p>
+            <span>New cases since previous day: </span>
+            <span th:text="${totalNewCases}"></span>
+        </p>
+    </div>
+
+    <input id="txtSearch" type="text" name="keyword" placeholder="Search by country/state">
+
+    <table class="table" id="tmp">
+        <thead class="thead-dark">
+        <tr>
+            <th class="w-25">State</th>
+            <th class="w-25">Country</th>
+            <th class="w-25">Latest total Cases</th>
+            <th class="w-25">Changes since last day</th>
+        </tr>
+        </thead>
+
+        <tr th:each="stat : ${allStats}">
+            <td th:text="${stat.getState()}"></td>
+            <td th:text="${stat.getCountry()}"></td>
+            <td th:text="${stat.getLatestTotalCases()}"></td>
+            <td th:text="${stat.getDiffFromPreviousDay()}"></td>
+        </tr>
+
+    </table>
+</div>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    let stats = /*[[${allStats}]]*/ "allStats";
+    /*]]>*/
+
+
+    $('#txtSearch').on('keyup', function () {
+        var value = $(this).val();
+        var data = FilterFunction(value, stats);
+        rebuildTable(data);
+    });
+
+    function FilterFunction(value, data) {
+        var filteredData = [];
+        for (var i = 0; i < data.length; i++) {
+            value = value.toLowerCase();
+            var country = data[i].country.toLowerCase();
+            var state = data[i].state.toLowerCase();
+            if (country.includes(value) || state.includes(value))
+                filteredData.push(data[i]);
+        }
+        return filteredData;
+    }
+
+    function rebuildTable(data) {
+        let table = document.getElementById('tmp');
+        table.innerHTML = ` <thead class="thead-dark">
+                                 <tr>
+                                    <th class="w-25">State</th>
+                                    <th class="w-25">Country</th>
+                                    <th class="w-25">Latest total Cases</th>
+                                    <th class="w-25">Changes since last day</th>
+                                </tr>
+                            </thead>`;
+
+        for (let i = 0; i < data.length; i++) {
+            let row = `<tr>
+                            <td>${data[i].state}</td>
+                            <td>${data[i].country}</td>
+                            <td>${data[i].latestTotalCases}</td>
+                            <td>${data[i].diffFromPreviousDay}</td>
+                       </tr>`;
+            table.innerHTML += row;
+        }
+    }
+</script>
+
+
+</body>
+
+</html>
