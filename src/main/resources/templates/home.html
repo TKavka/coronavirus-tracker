@@ -26,7 +26,7 @@
         </p>
     </div>
 
-    <input id="txtSearch" type="text" name="keyword" placeholder="Search by country/state">
+    <input id="txt-search" type="text" name="keyword" placeholder="Search..." style="width: 100%">
 
     <table class="table" id="tmp">
         <thead class="thead-dark">
@@ -38,7 +38,7 @@
         </tr>
         </thead>
 
-        <tr th:each="stat : ${allStats}">
+        <tr th:each="stat : ${allStats}" class="row-info">
             <td th:text="${stat.getState()}"></td>
             <td th:text="${stat.getCountry()}"></td>
             <td th:text="${stat.getLatestTotalCases()}"></td>
@@ -48,54 +48,51 @@
     </table>
 </div>
 
-<script th:inline="javascript">
-    /*<![CDATA[*/
-    let stats = /*[[${allStats}]]*/ "allStats";
-    /*]]>*/
-
-
-    $('#txtSearch').on('keyup', function () {
-        var value = $(this).val();
-        var data = FilterFunction(value, stats);
-        rebuildTable(data);
+<script>
+    $('#txt-search').on('keyup', function () {
+        search_table($(this).val())
     });
 
-    function FilterFunction(value, data) {
-        var filteredData = [];
-        for (var i = 0; i < data.length; i++) {
-            value = value.toLowerCase();
-            var country = data[i].country.toLowerCase();
-            var state = data[i].state.toLowerCase();
-            if (country.includes(value) || state.includes(value))
-                filteredData.push(data[i]);
-        }
-        return filteredData;
-    }
-
-    function rebuildTable(data) {
-        let table = document.getElementById('tmp');
-        table.innerHTML = ` <thead class="thead-dark">
-                                 <tr>
-                                    <th class="w-25">State</th>
-                                    <th class="w-25">Country</th>
-                                    <th class="w-25">Latest total Cases</th>
-                                    <th class="w-25">Changes since last day</th>
-                                </tr>
-                            </thead>`;
-
-        for (let i = 0; i < data.length; i++) {
-            let row = `<tr>
-                            <td>${data[i].state}</td>
-                            <td>${data[i].country}</td>
-                            <td>${data[i].latestTotalCases}</td>
-                            <td>${data[i].diffFromPreviousDay}</td>
-                       </tr>`;
-            table.innerHTML += row;
-        }
+    function search_table(value){
+        $('.row-info').each(function () {
+            var found = 'false';
+            $(this).each(function () {
+                if($(this).text().toLowerCase().indexOf(value.toLowerCase()) >= 0) {
+                    found = 'true';
+                }
+            });
+            if(found === 'true') {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        })
     }
 </script>
 
+<style>
 
+    #txt-search {
+        width: 100%;
+        outline: none;
+        padding: 10px;
+        margin-bottom: 10px;
+        border: 2px solid #343A40;
+        border-radius: 5px 0 0 5px;
+        background: #d3d7db;
+        transition: background 0.25s, box-shadow 0.25s;
+
+    }
+
+    #txt-search:focus{
+        background: #E9ECEF;
+        box-shadow: 0 0 2px;
+    }
+
+    ::placeholder {
+        font-size: 20px;
+        color: #343a40;
+    }
+</style>
 </body>
-
 </html>
