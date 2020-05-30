@@ -1,0 +1,134 @@
+* {
+    font-family: 'Oxygen', sans-serif;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+}
+
+tr th {
+    max-width: 20%;
+}
+#particles-js {
+    width: 100%;
+    height: 100%;
+    background-color: #f9fcff;
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 0;
+}
+
+table td {
+    display: block;
+}
+.content {
+    position: relative;
+    background: #f9fcff;
+}
+
+header {
+    width: 100%;
+    height: auto;
+    text-align: center;
+    padding: 20px 0;
+}
+
+.holder {
+    margin: 30px 0;
+}
+
+.col:nth-of-type(2) {
+    padding: 0;
+}
+
+.top {
+    width: 100%;
+    height: auto;
+    font-size: 30px;
+    font-weight: bold;
+    border-radius: 10px 10px 0 0;
+}
+
+.top p {
+    text-align: center;
+    padding: 30px 0;
+    margin: 0;
+}
+
+.bottom {
+    width: 100%;
+    height: auto;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 0 0 10px 10px;
+}
+
+.bottom p {
+    text-align: center;
+    padding: 10px 0;
+    margin: 0;
+}
+
+#confirmed-digits {
+    background: #FFF5F5;
+    color: #E53E3E;
+}
+
+#confirmed-txt {
+    background: #FED7D7;
+    color: #E53E3E;
+}
+
+#recovered-digits {
+    background: #F0FFF4;
+    color: #38A169;
+}
+
+#recovered-txt {
+    background: #C6F6D5;
+    color: #38A169;
+}
+
+#death-digits {
+    background: #EDF2F7;
+    color: #718096;
+}
+
+#death-txt {
+    background: #E2E8F0;
+    color: #718096;
+}
+
+.search-bar {
+    text-align: center;
+}
+#txt-search {
+    width: 80%;
+    outline: none;
+    margin: 20px auto;
+    padding: 10px 20px;
+    border: 2px solid #546070;
+    border-radius: 40px;
+    background: #e3e8ed;
+    transition: background 0.25s, box-shadow 0.25s;
+    font-size: 17px;
+}
+
+#txt-search:focus {
+    background: #f9fcff;
+    box-shadow: 0 0 2px;
+}
+
+::placeholder {
+    font-size: 17px;
+    color: #5e6974;
+    opacity: 80%;
+}
+
+.table tr {
+    text-align: center;
+}
