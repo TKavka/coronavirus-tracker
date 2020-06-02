@@ -21,12 +21,14 @@ public class HomeController {
     @GetMapping
     public String homePage(Model model) {
         List<LocationStats> allStats = service.getAllStats();
-        int allCurrentDayCases = allStats.stream().mapToInt(stat -> stat.getLatestTotalCases()).sum();
-        int totalNewCases = allStats.stream().mapToInt(stat -> stat.getDiffFromPreviousDay()).sum();
-        model.addAttribute("allCurrentDayCases", NumberFormat.getNumberInstance(Locale.US).format(allCurrentDayCases));
-        model.addAttribute("totalNewCases", totalNewCases);
+        int totalConfirmedCases = allStats.stream().mapToInt(stat -> stat.getLatestTotalCases()).sum();
+        int totalRecoveredCases = allStats.stream().mapToInt(stat -> stat.getLatestRecoveredCases()).sum();
+        int totalDeaths = allStats.stream().mapToInt(stat -> stat.getLatestDeathCases()).sum();
+
+        model.addAttribute("totalConfirmedCases", NumberFormat.getNumberInstance(Locale.US).format(totalConfirmedCases));
+        model.addAttribute("totalRecoveredCases", NumberFormat.getNumberInstance(Locale.US).format(totalRecoveredCases));
+        model.addAttribute("totalDeaths", NumberFormat.getNumberInstance(Locale.US).format(totalDeaths));
         model.addAttribute("allStats", allStats);
-        model.addAttribute("message", "asdasf");
         return "home";
     }
 }

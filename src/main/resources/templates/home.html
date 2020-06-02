@@ -23,7 +23,7 @@
         <div class="holder row">
             <div class="col">
                 <div class="top" id="confirmed-digits">
-                    <p th:text="${allCurrentDayCases}"></p>
+                    <p th:text="${totalConfirmedCases}"></p>
                 </div>
                 <div class="bottom" id="confirmed-txt">
                     <p>Confirmed</p>
@@ -31,7 +31,7 @@
             </div>
             <div class="col">
                 <div class="top" id="recovered-digits">
-                    <p>5,456,234</p>
+                    <p th:text="${totalRecoveredCases}"></p>
                 </div>
                 <div class="bottom" id="recovered-txt">
                     <p>Recovered</p>
@@ -39,7 +39,7 @@
             </div>
             <div class="col">
                 <div class="top" id="death-digits">
-                    <p>5,456,234</p>
+                    <p th:text="${totalDeaths}"></p>
                 </div>
                 <div class="bottom" id="death-txt">
                     <p>Deaths</p>
@@ -55,14 +55,14 @@
             <thead class="thead-dark">
             <tr class="row">
                 <th class="w-100">State</th>
-                <th class="w-100" style="text-align: center">Country</th>
+                <th class="w-100">Country</th>
                 <th class="w-100">Confirmed</th>
                 <th class="w-100">Recovered</th>
                 <th class="w-100">Death</th>
             </tr>
             </thead>
 
-            <tr th:each="stat : ${allStats}" class="row">
+            <tr th:each="stat : ${allStats}" class="row-info row">
                 <td style="width: 20%" th:text="${stat.getState()}"></td>
                 <td style="width: 20%" th:text="${stat.getCountry()}"></td>
                 <td style="width: 20%" th:text="${stat.getLatestTotalCases()}"></td>

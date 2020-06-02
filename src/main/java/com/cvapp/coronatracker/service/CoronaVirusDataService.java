@@ -1,28 +1,18 @@
 package com.cvapp.coronatracker.service;
-
 import com.cvapp.coronatracker.models.LocationStats;
-import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-
 import javax.annotation.PostConstruct;
 import java.io.IOException;
-import java.io.StringReader;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.nio.file.Paths;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 @Service
 public class CoronaVirusDataService {
@@ -37,78 +27,79 @@ public class CoronaVirusDataService {
     }
 
     @PostConstruct
-    @Scheduled(cron = "* * * 1 * *")
+    @Scheduled(cron = "0 0 0 * * *")
     public void fetchCoronaData() throws IOException, InterruptedException {
-        List<LocationStats> newStats = new ArrayList<>();
+        //Creating the Client Connection Pool Manager by instantiating the PoolingHttpClientConnectionManager class.
+        PoolingHttpClientConnectionManager connManager = new PoolingHttpClientConnectionManager();
 
-        HttpClient httpClient = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(VIRUS_CONFIRMED_URL))
-                .build();
-        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        //Set the maximum number of connections in the pool
+        connManager.setMaxTotal(100);
 
-        StringReader reader = new StringReader(response.body());
-        Iterable<CSVRecord> records = CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(reader);
-//---------------------------------------------------------
-        HttpClient httpClient2 = HttpClient.newHttpClient();
-        HttpRequest request2 = HttpRequest.newBuilder()
-                .uri(URI.create(VIRUS_RECOVERED_URL))
-                .build();
-        HttpResponse<String> response2 = httpClient2.send(request2, HttpResponse.BodyHandlers.ofString());
+        //Create a ClientBuilder Object by setting the connection manager
+        HttpClientBuilder clientBuilder = HttpClients.custom().setConnectionManager(connManager);
 
-        StringReader reader2 = new StringReader(response2.body());
-        Iterable<CSVRecord> records2 = CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(reader2);
+        //Build the CloseableHttpClient object using the build() method.
+        CloseableHttpClient httpclient = clientBuilder.build();
+
+        //Creating the HttpGet requests
+        HttpGet httpGetForConfirmed = new HttpGet(VIRUS_CONFIRMED_URL);
+        HttpGet httpGetForRecovered = new HttpGet(VIRUS_RECOVERED_URL);
+        HttpGet httpGetForDeaths = new HttpGet(VIRUS_DEATHS_URL);
+
+        //Creating the Thread objects
+        ServiceHelper threadForConfirmed = new ServiceHelper(httpclient, httpGetForConfirmed);
+        ServiceHelper threadForRecovered = new ServiceHelper(httpclient, httpGetForRecovered);
+        ServiceHelper threadForDeaths = new ServiceHelper(httpclient, httpGetForDeaths);
+
+        //Starting all the threads
+        threadForConfirmed.start();
+        threadForRecovered.start();
+        threadForDeaths.start();
+
+        //Joining all the threads
+        threadForConfirmed.join();
+        threadForRecovered.join();
+        threadForDeaths.join();
+
+        //get all recovered cases
+        Iterable<CSVRecord> recoveredRecords = threadForRecovered.getRecords();
         List<Integer> recoveredCases = new ArrayList<>();
-        for (CSVRecord record : records2) {
+        for (CSVRecord record : recoveredRecords) {
             recoveredCases.add(Integer.parseInt(record.get(record.size() - 1)));
         }
-
         Collections.reverse(recoveredCases);
-        int i = recoveredCases.size() - 1;
+        //iterator for list traversing in 'allStat' records
+        int iteratorForRecovered = recoveredCases.size() - 1;
 
-//        for (int a : recoveredCases) {
-//            System.out.println(a);
-//        }
 
-//-------------------------------------------------------
-        HttpClient httpClient3 = HttpClient.newHttpClient();
-        HttpRequest request3 = HttpRequest.newBuilder()
-                .uri(URI.create(VIRUS_DEATHS_URL))
-                .build();
-        HttpResponse<String> response3 = httpClient3.send(request3, HttpResponse.BodyHandlers.ofString());
-
-        StringReader reader3 = new StringReader(response3.body());
-        Iterable<CSVRecord> records3 = CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(reader3);
+        //get all deaths
+        Iterable<CSVRecord> deathsRecords = threadForDeaths.getRecords();
         List<Integer> deathCases = new ArrayList<>();
-        for (CSVRecord record : records3) {
+        for (CSVRecord record : deathsRecords) {
             deathCases.add(Integer.parseInt(record.get(record.size() - 1)));
         }
-
         Collections.reverse(deathCases);
-        int j = deathCases.size() - 1;
+        //iterator for list traversing in 'allStat' records
+        int iteratorForDeaths = deathCases.size() - 1;
 
-        for (int a : deathCases) {
-            System.out.println(a);
-        }
-//-------------------------------------------------------
-        for (CSVRecord record : records) {
+
+        List<LocationStats> newStats = new ArrayList<>();
+        Iterable<CSVRecord> confirmedRecords = threadForConfirmed.getRecords();
+        for (CSVRecord record : confirmedRecords) {
             LocationStats locationStats = new LocationStats();
             locationStats.setCountry(record.get("Country/Region"));
             locationStats.setState(record.get("Province/State"));
             int currentDayCases = Integer.parseInt(record.get(record.size() - 1));
-            int previousDayCases = Integer.parseInt(record.get(record.size() - 2));
             locationStats.setLatestTotalCases(currentDayCases);
-            locationStats.setLatestRecoveredCases(recoveredCases.get(i));
-            locationStats.setLatestDeathCases(deathCases.get(j));
-            if (i > 0) {
-                i--;
+            locationStats.setLatestRecoveredCases(recoveredCases.get(iteratorForRecovered));
+            locationStats.setLatestDeathCases(deathCases.get(iteratorForDeaths));
+            if (iteratorForRecovered > 0) {
+                iteratorForRecovered--;
             }
-
-            if (j > 0) {
-                j--;
+            if (iteratorForDeaths > 0) {
+                iteratorForDeaths--;
             }
             newStats.add(locationStats);
-            // System.out.println(locationStats);
         }
         this.allStats = newStats;
     }
